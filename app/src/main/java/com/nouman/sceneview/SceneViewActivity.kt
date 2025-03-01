@@ -17,55 +17,58 @@ import com.google.ar.sceneform.ux.FootprintSelectionVisualizer
 import com.google.ar.sceneform.ux.TransformationSystem
 import com.nouman.sceneview.SceneViewActivity.Statics.EXTRA_MODEL_TYPE
 import com.nouman.sceneview.nodes.DragTransformableNode
-import kotlinx.android.synthetic.main.activity_scene_view.*
+import com.nouman.sceneview.databinding.ActivitySceneViewBinding
 import java.lang.Exception
 import java.util.concurrent.CompletionException
 
 class SceneViewActivity : AppCompatActivity() {
+    private lateinit var binding: ActivitySceneViewBinding;
 
     var remoteModelUrl =
-        "https://poly.googleusercontent.com/downloads/0BnDT3T1wTE/85QOHCZOvov/Mesh_Beagle.gltf"
+          "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/CarConcept/glTF-WEBP/CarConcept.gltf"  // good
 
     var localModel = "model.sfb"
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_scene_view)
+        binding = ActivitySceneViewBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         val remoteModelUrl = intent.getStringExtra(EXTRA_MODEL_TYPE)
         if (remoteModelUrl.equals("remote")) {
+            // load remote model
             renderRemoteObject()
         } else {
-            //load local model
+            // load local model
             renderLocalObject()
         }
     }
 
     private fun renderRemoteObject() {
 
-        skuProgressBar.setVisibility(View.VISIBLE)
+        binding.skuProgressBar.setVisibility(View.VISIBLE)
         ModelRenderable.builder()
             .setSource(
                 this, RenderableSource.Builder().setSource(
                     this,
                     Uri.parse(remoteModelUrl),
                     RenderableSource.SourceType.GLTF2
-                ).setScale(0.01f)
+                ).setScale(0.15f)
                     .setRecenterMode(RenderableSource.RecenterMode.CENTER)
                     .build()
             )
             .setRegistryId(remoteModelUrl)
             .build()
             .thenAccept { modelRenderable: ModelRenderable ->
-                skuProgressBar.setVisibility(View.GONE)
+                binding.skuProgressBar.setVisibility(View.GONE)
                 addNodeToScene(modelRenderable)
             }
             .exceptionally { throwable: Throwable? ->
                 var message: String?
                 message = if (throwable is CompletionException) {
-                    skuProgressBar.setVisibility(View.GONE)
+                    binding.skuProgressBar.setVisibility(View.GONE)
                     "Internet is not working"
                 } else {
-                    skuProgressBar.setVisibility(View.GONE)
+                    binding.skuProgressBar.setVisibility(View.GONE)
                     "Can't load Model"
                 }
                 val mainHandler = Handler(Looper.getMainLooper())
@@ -88,22 +91,22 @@ class SceneViewActivity : AppCompatActivity() {
 
     private fun renderLocalObject() {
 
-        skuProgressBar.setVisibility(View.VISIBLE)
+        binding.skuProgressBar.setVisibility(View.VISIBLE)
         ModelRenderable.builder()
             .setSource(this, Uri.parse(localModel))
             .setRegistryId(localModel)
             .build()
             .thenAccept { modelRenderable: ModelRenderable ->
-                skuProgressBar.setVisibility(View.GONE)
+                binding.skuProgressBar.setVisibility(View.GONE)
                 addNodeToScene(modelRenderable)
             }
             .exceptionally { throwable: Throwable? ->
                 var message: String?
                 message = if (throwable is CompletionException) {
-                    skuProgressBar.setVisibility(View.GONE)
+                    binding.skuProgressBar.setVisibility(View.GONE)
                     "Internet is not working"
                 } else {
-                    skuProgressBar.setVisibility(View.GONE)
+                    binding.skuProgressBar.setVisibility(View.GONE)
                     "Can't load Model"
                 }
                 val mainHandler = Handler(Looper.getMainLooper())
@@ -126,24 +129,22 @@ class SceneViewActivity : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
-        sceneView.pause()
+        binding.sceneView.pause()
     }
 
     private fun addNodeToScene(model: ModelRenderable) {
-        if (sceneView != null) {
-            val transformationSystem = makeTransformationSystem()
-            var dragTransformableNode = DragTransformableNode(1f, transformationSystem)
-            dragTransformableNode?.renderable = model
-            sceneView.getScene().addChild(dragTransformableNode)
-            dragTransformableNode?.select()
-            sceneView.getScene()
-                .addOnPeekTouchListener { hitTestResult: HitTestResult?, motionEvent: MotionEvent? ->
-                    transformationSystem.onTouch(
-                        hitTestResult,
-                        motionEvent
-                    )
-                }
-        }
+        val transformationSystem = makeTransformationSystem()
+        val dragTransformableNode = DragTransformableNode(1f, transformationSystem)
+        dragTransformableNode.renderable = model
+        binding.sceneView.getScene().addChild(dragTransformableNode)
+        dragTransformableNode.select()
+        binding.sceneView.getScene()
+            .addOnPeekTouchListener { hitTestResult: HitTestResult?, motionEvent: MotionEvent? ->
+                transformationSystem.onTouch(
+                    hitTestResult,
+                    motionEvent
+                )
+            }
     }
 
     private fun makeTransformationSystem(): TransformationSystem {
@@ -155,7 +156,7 @@ class SceneViewActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         try {
-            sceneView.resume()
+            binding.sceneView.resume()
         } catch (e: CameraNotAvailableException) {
             e.printStackTrace()
         }
@@ -169,7 +170,7 @@ class SceneViewActivity : AppCompatActivity() {
         super.onDestroy()
         try {
 
-            sceneView.destroy()
+            binding.sceneView.destroy()
         } catch (e: Exception) {
             e.printStackTrace()
         }
