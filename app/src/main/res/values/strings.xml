@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">SceneView</string>
+    <string name="app_name">SceneViewDemo</string>
     <string name="sceneview_usage">SceneView Usage</string>
     <string name="remote_model">Remote model</string>
     <string name="local_model">Local model</string>

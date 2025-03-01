@@ -13,4 +13,4 @@ dependencyResolutionManagement {
     }
 }
 include ':app'
-rootProject.name='SceneView'
+rootProject.name='SceneViewDemo'
